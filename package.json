@@ -1,0 +1,28 @@
+{
+  "name": "paperclip-adapter-antigravity",
+  "version": "1.0.0",
+  "type": "module",
+  "license": "MIT",
+  "paperclip": {
+    "adapterUiParser": "1.0.0"
+  },
+  "exports": {
+    ".": "./dist/index.js",
+    "./server": "./dist/server/index.js",
+    "./ui-parser": "./dist/ui-parser.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@paperclipai/adapter-utils": "^2026.325.0",
+    "picocolors": "^1.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.7.0"
+  }
+}
