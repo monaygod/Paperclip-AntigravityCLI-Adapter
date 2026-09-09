@@ -116,12 +116,43 @@ ${instructionsContent}
     args.push("--effort", effort);
   }
   // If the session has history, we can pass it
-  const sessionParams = ctx.runtime?.sessionParams as any;
-  if (sessionParams && sessionParams.conversationId) {
-    args.push("--conversation", sessionParams.conversationId);
+  const sessionParams = ctx.runtime?.sessionParams as any || ctx.context?.resumeSessionParams as any;
+  const conversationId = sessionParams?.conversationId || sessionParams?.sessionId;
+  if (conversationId) {
+    args.push("--conversation", conversationId);
   }
 
   const procEnv = { ...buildPaperclipEnv(ctx.agent), ...process.env } as Record<string, string>;
+  procEnv.PAPERCLIP_RUN_ID = ctx.runId;
+  if (ctx.authToken) {
+    procEnv.PAPERCLIP_API_KEY = ctx.authToken;
+  }
+  const wakeTaskId =
+    (typeof ctx.context?.taskId === "string" && ctx.context.taskId.trim().length > 0 && ctx.context.taskId.trim()) ||
+    (typeof ctx.context?.issueId === "string" && ctx.context.issueId.trim().length > 0 && ctx.context.issueId.trim()) ||
+    null;
+  if (wakeTaskId) {
+    procEnv.PAPERCLIP_TASK_ID = wakeTaskId;
+  }
+  const wakeReason =
+    typeof ctx.context?.wakeReason === "string" && ctx.context.wakeReason.trim().length > 0
+      ? ctx.context.wakeReason.trim()
+      : null;
+  if (wakeReason) {
+    procEnv.PAPERCLIP_WAKE_REASON = wakeReason;
+  }
+  const wakeCommentId =
+    (typeof ctx.context?.wakeCommentId === "string" && ctx.context.wakeCommentId.trim().length > 0 && ctx.context.wakeCommentId.trim()) ||
+    (typeof ctx.context?.commentId === "string" && ctx.context.commentId.trim().length > 0 && ctx.context.commentId.trim()) ||
+    null;
+  if (wakeCommentId) {
+    procEnv.PAPERCLIP_WAKE_COMMENT_ID = wakeCommentId;
+  }
+  if (ctx.context?.paperclipWake) {
+    try {
+      procEnv.PAPERCLIP_WAKE_PAYLOAD_JSON = JSON.stringify(ctx.context.paperclipWake);
+    } catch {}
+  }
   
   const rawPromptTemplate = asString(ctx.config.promptTemplate, "");
   const promptTemplate = rawPromptTemplate.trim().length > 0 ? rawPromptTemplate : DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE;
@@ -207,7 +238,7 @@ ${instructionsContent}
     errorMessage: failed ? parsed.error || errors.join(", ") : undefined,
     summary: parsed.summary,
     resultJson: parsed.raw,
-    sessionId: parsed.sessionId || undefined,
-    sessionParams: parsed.sessionId ? { conversationId: parsed.sessionId } : undefined,
+    sessionDisplayId: parsed.sessionId || undefined,
+    sessionParams: parsed.sessionId ? { sessionId: parsed.sessionId } : undefined,
   };
 }

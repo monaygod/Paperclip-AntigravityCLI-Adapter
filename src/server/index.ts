@@ -12,7 +12,7 @@ const execAsync = promisify(exec);
 export const sessionCodec: AdapterSessionCodec = {
   deserialize(raw) { return typeof raw === "object" ? (raw as Record<string, unknown>) : null; },
   serialize(params) { return params; },
-  getDisplayId(params) { return typeof params?.conversationId === "string" ? params.conversationId : null; },
+  getDisplayId(params) { return typeof params?.sessionId === "string" ? params.sessionId : null; },
 };
 
 export async function listModels() {
